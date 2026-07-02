@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+civicmind.db
+uploads/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Environment
+.env
+frontend/.env
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
