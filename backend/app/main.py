@@ -25,19 +25,19 @@ def create_app() -> FastAPI:
     app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
     app.include_router(api_router, prefix=settings.api_v1_prefix)
 
+    @app.get("/")
+    def root():
+        return {
+            "message": "Welcome to CivicMind AI 🚀",
+            "docs": "/docs",
+            "health": "/health"
+        }
+
     @app.get("/health")
-    def health() -> dict[str, str]:
+    def health():
         return {"status": "ok"}
 
     return app
-
-@app.get("/")
-def root():
-    return {
-        "message": "Welcome to CivicMind AI 🚀",
-        "docs": "/docs",
-        "health": "/health"
-    }
 
 
 app = create_app()
