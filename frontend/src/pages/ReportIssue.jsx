@@ -17,14 +17,22 @@ export default function ReportIssue() {
   const [error, setError] = useState('');
 
   function useLocation() {
-    navigator.geolocation.getCurrentPosition((position) => {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
       setForm((current) => ({
         ...current,
         latitude: position.coords.latitude.toFixed(6),
         longitude: position.coords.longitude.toFixed(6),
       }));
-    });
-  }
+    },
+    () => {
+      alert("Unable to access your location.");
+    },
+    {
+      enableHighAccuracy: true,
+    }
+  );
+ }
 
   async function submit(event) {
     event.preventDefault();
@@ -64,7 +72,7 @@ export default function ReportIssue() {
             Title
             <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
           </label>
-          
+
             Description
             <textarea
               rows={5}
