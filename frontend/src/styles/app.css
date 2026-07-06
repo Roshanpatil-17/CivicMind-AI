@@ -90,7 +90,7 @@ p {
 
 .brand-mark {
   align-items: center;
-  background: #f05d4f;
+  background: #d45c51;
   border-radius: 8px;
   color: #ffffff;
   display: inline-flex;
@@ -419,5 +419,14 @@ dd {
   .nav-list {
     grid-template-columns: 1fr 1fr;
   }
+
+  .image-preview{
+    margin-top:15px;
+    width:100%;
+    border-radius:12px;
+    max-height:260px;
+    object-fit:cover;
+    border:2px solid #dcdcdc;
+ }
 }
 

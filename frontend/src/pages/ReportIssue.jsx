@@ -1,5 +1,6 @@
 import { Camera, MapPin, Send } from 'lucide-react';
 import { useState } from 'react';
+import MapPicker from '../components/MapPicker';
 
 import { api } from '../api/client.js';
 
@@ -11,6 +12,7 @@ export default function ReportIssue() {
     longitude: '',
     image: null,
   });
+  const [preview, setPreview] = useState(null);
   const [created, setCreated] = useState(null);
   const [error, setError] = useState('');
 
@@ -62,7 +64,7 @@ export default function ReportIssue() {
             Title
             <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
           </label>
-          <label>
+          
             Description
             <textarea
               rows={5}
@@ -70,32 +72,46 @@ export default function ReportIssue() {
               onChange={(event) => setForm({ ...form, description: event.target.value })}
               required
             />
-          </label>
-          <div className="split">
-            <label>
-              Latitude
-              <input
-                type="number"
-                step="any"
-                value={form.latitude}
-                onChange={(event) => setForm({ ...form, latitude: event.target.value })}
-                required
-              />
-            </label>
-            <label>
-              Longitude
-              <input
-                type="number"
-                step="any"
-                value={form.longitude}
-                onChange={(event) => setForm({ ...form, longitude: event.target.value })}
-                required
-              />
-            </label>
-          </div>
+          <div className="panel">
+  <h3>Select Location</h3>
+
+  <MapPicker
+    latitude={form.latitude}
+    longitude={form.longitude}
+    onLocationChange={({ lat, lng }) => {
+      setForm((current) => ({
+        ...current,
+        latitude: lat.toFixed(6),
+        longitude: lng.toFixed(6),
+      }));
+    }}
+  />
+
+  <p style={{ marginTop: '10px' }}>
+    <strong>Latitude:</strong> {form.latitude || '--'}
+    <br />
+    <strong>Longitude:</strong> {form.longitude || '--'}
+  </p>
+</div>
           <label>
             Photo
-            <input type="file" accept="image/*" onChange={(event) => setForm({ ...form, image: event.target.files[0] })} />
+            <input
+  type="file"
+  accept="image/*"
+  onChange={(event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    setForm({
+      ...form,
+      image: file,
+    });
+
+    setPreview(URL.createObjectURL(file));
+  }}
+/>
+          {preview && <img className="image-preview" src={preview} alt="Preview" />}
           </label>
           {error && <p className="error">{error}</p>}
           <button className="primary" type="submit">
