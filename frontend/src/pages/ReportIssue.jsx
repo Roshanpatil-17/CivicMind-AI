@@ -1,187 +1,337 @@
-import { Camera, MapPin, Send } from 'lucide-react';
-import { useState } from 'react';
-import MapPicker from '../components/MapPicker';
+import { MapPin, Send } from "lucide-react";
+import { useState } from "react";
 
-import { api } from '../api/client.js';
+import MapPicker from "../components/MapPicker";
+import { api } from "../api/client";
 
 export default function ReportIssue() {
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    latitude: '',
-    longitude: '',
+    title: "",
+    description: "",
+    latitude: "",
+    longitude: "",
     image: null,
   });
+
   const [preview, setPreview] = useState(null);
   const [created, setCreated] = useState(null);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function useLocation() {
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      setForm((current) => ({
-        ...current,
-        latitude: position.coords.latitude.toFixed(6),
-        longitude: position.coords.longitude.toFixed(6),
-      }));
-    },
-    () => {
-      alert("Unable to access your location.");
-    },
-    {
-      enableHighAccuracy: true,
-    }
-  );
- }
-
-  async function submit(event) {
-    event.preventDefault();
-    setError('');
-    setCreated(null);
-    setLoading(true);
-    const data = new FormData();
-    data.append('title', form.title);
-    data.append('description', form.description);
-    data.append('latitude', form.latitude);
-    data.append('longitude', form.longitude);
-    if (form.image) {
-      data.append('image', form.image);
-    }
-
-    try {
-      const issue = await api.createIssue(data);
-      setCreated(issue);
-      setLoading(false);
-      setForm({ title: '', description: '', latitude: '', longitude: '', image: null });
-    } catch (err) {
-      setLoading(false);
-    setError(err.message);
-    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setForm((current) => ({
+          ...current,
+          latitude: position.coords.latitude.toFixed(6),
+          longitude: position.coords.longitude.toFixed(6),
+        }));
+      },
+      () => {
+        alert("Unable to get your location.");
+      },
+      {
+        enableHighAccuracy: true,
+      }
+    );
   }
 
-  return (
-    <section className="page-grid two">
-      <div>
-        <div className="page-heading">
-          <h1>Report issue</h1>
-          <button className="secondary" type="button" onClick={useLocation}>
-            <MapPin size={18} />
-            <span>Use location</span>
-          </button>
-        </div>
-
-        <form className="panel form-panel" onSubmit={submit}>
-          <label>
-            Title
-            <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
-          </label>
-
-            Description
-            <textarea
-              rows={5}
-              value={form.description}
-              onChange={(event) => setForm({ ...form, description: event.target.value })}
-              required
-            />
-          <div className="panel">
-  <h3>Select Location</h3>
-
-  <MapPicker
-    latitude={form.latitude}
-    longitude={form.longitude}
-    onLocationChange={({ lat, lng }) => {
-      setForm((current) => ({
-        ...current,
-        latitude: lat.toFixed(6),
-        longitude: lng.toFixed(6),
-      }));
-    }}
-  />
-
-  <p style={{ marginTop: '10px' }}>
-    <strong>Latitude:</strong> {form.latitude || '--'}
-    <br />
-    <strong>Longitude:</strong> {form.longitude || '--'}
-  </p>
-</div>
-          <label>
-            Photo
-            <input
-  type="file"
-  accept="image/*"
-  onChange={(event) => {
+  function handleImage(event) {
     const file = event.target.files[0];
 
     if (!file) return;
 
-    setForm({
-      ...form,
+    setForm((current) => ({
+      ...current,
       image: file,
-    });
+    }));
 
     setPreview(URL.createObjectURL(file));
-  }}
-/>
-          {preview && (
-  <div className="preview-container">
-    <img
-      src={preview}
-      alt="Preview"
-      className="image-preview"
-    />
-  </div>
-)}
-          </label>
-          {error && <p className="error">{error}</p>}
-          <button className="primary" type="submit" disabled={loading}>
-            <Send size={18} />
-            <span>{loading
-                  ? "Analyzing..."
-                    : "Submit"}
-            </span>
-            {
-loading && (
+  }
 
-<div className="loading-box">
+  async function submit(event) {
+    event.preventDefault();
 
-<p>📤 Uploading image...</p>
+    setLoading(true);
+    setCreated(null);
+    setError("");
 
-<p>🤖 AI analyzing...</p>
+    const data = new FormData();
 
-<p>🔍 Finding duplicates...</p>
+    data.append("title", form.title);
+    data.append("description", form.description);
+    data.append("latitude", form.latitude);
+    data.append("longitude", form.longitude);
 
-<p>⚡ Calculating priority...</p>
+    if (form.image) {
+      data.append("image", form.image);
+    }
 
-</div>
+    try {
+      const issue = await api.createIssue(data);
 
-)
-}
+      setCreated(issue);
+
+      setForm({
+        title: "",
+        description: "",
+        latitude: "",
+        longitude: "",
+        image: null,
+      });
+
+      setPreview(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <section className="report-page">
+
+  <div className="report-left">
+
+    <h1>Report New Issue</h1>
+    <p className="subtitle">
+      Help improve your city by reporting civic problems.
+    </p>
+
+    <form className="report-form" onSubmit={submit}>
+
+      <label>
+        Title
+        <input
+          type="text"
+          placeholder="Example: Large pothole near bus stand"
+          value={form.title}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              title: e.target.value,
+            })
+          }
+          required
+        />
+      </label>
+
+      <label>
+        Description
+        <textarea
+          rows="5"
+          placeholder="Describe the issue..."
+          value={form.description}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              description: e.target.value,
+            })
+          }
+          required
+        />
+      </label>
+
+      <div className="location-card">
+
+        <div className="location-header">
+
+          <h3>
+            <MapPin size={18}/>
+            Select Location
+          </h3>
+
+          <button
+            type="button"
+            className="secondary"
+            onClick={useLocation}
+          >
+            Use My Location
           </button>
-        </form>
+
+        </div>
+
+        <MapPicker
+          latitude={form.latitude}
+          longitude={form.longitude}
+          onLocationChange={({lat,lng})=>{
+
+            setForm(current=>({
+
+              ...current,
+
+              latitude:lat.toFixed(6),
+
+              longitude:lng.toFixed(6)
+
+            }))
+
+          }}
+        />
+
       </div>
 
-      <aside className="panel result-panel">
-        <Camera size={28} />
-        {created ? (
-          <>
-            <h2>Issue #{created.id}</h2>
-            <dl>
-              <dt>Category</dt>
-              <dd>{created.category}</dd>
-              <dt>Priority</dt>
-              <dd>{created.priority}</dd>
-              <dt>Confidence</dt>
-              <dd>{Math.round(created.confidence * 100)}%</dd>
-              <dt>Duplicate</dt>
-              <dd>{created.duplicate_of_id ? `#${created.duplicate_of_id}` : '-'}</dd>
-            </dl>
-          </>
-        ) : (
-          <h2>Ready</h2>
-        )}
-      </aside>
-    </section>
-  );
-}
+      <label>
 
+        Upload Image
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImage}
+        />
+
+      </label>
+
+      {error && (
+
+        <div className="error-box">
+
+          {error}
+
+        </div>
+
+      )}
+
+      <button
+        className="primary submit-btn"
+        disabled={loading}
+      >
+
+        <Send size={18}/>
+
+        {
+
+        loading
+
+        ?
+
+        "Analyzing Issue..."
+
+        :
+
+        "Submit Report"
+
+        }
+
+      </button>
+
+    </form>
+
+  </div>
+
+  <div className="report-right">
+
+    <div className="preview-card">
+
+      <h2>Image Preview</h2>
+
+      {
+
+      preview
+
+      ?
+
+      <img
+        src={preview}
+        alt="Preview"
+        className="image-preview"
+      />
+
+      :
+
+      <div className="empty-preview">
+
+        📷
+
+        <p>No image selected</p>
+
+      </div>
+
+      }
+
+    </div>
+
+    <div className="analysis-card">
+
+      <h2>AI Analysis</h2>
+
+      <div className="analysis-item">
+
+        <span>Category</span>
+
+        <strong>
+
+          {created?.category ?? "--"}
+
+        </strong>
+
+      </div>
+
+      <div className="analysis-item">
+
+        <span>Confidence</span>
+
+        <strong>
+
+          {
+
+          created
+
+          ?
+
+          `${Math.round(created.confidence*100)}%`
+
+          :
+
+          "--"
+
+          }
+
+        </strong>
+
+      </div>
+
+      <div className="analysis-item">
+
+        <span>Priority</span>
+
+        <strong>
+
+          {created?.priority ?? "--"}
+
+        </strong>
+
+      </div>
+
+      <div className="analysis-item">
+
+        <span>Duplicate</span>
+
+        <strong>
+
+          {
+
+          created?.duplicate_of_id
+
+          ?
+
+          `#${created.duplicate_of_id}`
+
+          :
+
+          "No"
+
+          }
+
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+);
+}
