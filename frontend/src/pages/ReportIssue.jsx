@@ -15,6 +15,7 @@ export default function ReportIssue() {
   const [preview, setPreview] = useState(null);
   const [created, setCreated] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function useLocation() {
   navigator.geolocation.getCurrentPosition(
@@ -38,6 +39,7 @@ export default function ReportIssue() {
     event.preventDefault();
     setError('');
     setCreated(null);
+    setLoading(true);
     const data = new FormData();
     data.append('title', form.title);
     data.append('description', form.description);
@@ -50,9 +52,11 @@ export default function ReportIssue() {
     try {
       const issue = await api.createIssue(data);
       setCreated(issue);
+      setLoading(false);
       setForm({ title: '', description: '', latitude: '', longitude: '', image: null });
     } catch (err) {
-      setError(err.message);
+      setLoading(false);
+    setError(err.message);
     }
   }
 
@@ -119,12 +123,40 @@ export default function ReportIssue() {
     setPreview(URL.createObjectURL(file));
   }}
 />
-          {preview && <img className="image-preview" src={preview} alt="Preview" />}
+          {preview && (
+  <div className="preview-container">
+    <img
+      src={preview}
+      alt="Preview"
+      className="image-preview"
+    />
+  </div>
+)}
           </label>
           {error && <p className="error">{error}</p>}
-          <button className="primary" type="submit">
+          <button className="primary" type="submit" disabled={loading}>
             <Send size={18} />
-            <span>Submit</span>
+            <span>{loading
+                  ? "Analyzing..."
+                    : "Submit"}
+            </span>
+            {
+loading && (
+
+<div className="loading-box">
+
+<p>📤 Uploading image...</p>
+
+<p>🤖 AI analyzing...</p>
+
+<p>🔍 Finding duplicates...</p>
+
+<p>⚡ Calculating priority...</p>
+
+</div>
+
+)
+}
           </button>
         </form>
       </div>

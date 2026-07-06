@@ -420,13 +420,69 @@ dd {
     grid-template-columns: 1fr 1fr;
   }
 
-  .image-preview{
-    margin-top:15px;
-    width:100%;
-    border-radius:12px;
-    max-height:260px;
-    object-fit:cover;
-    border:2px solid #dcdcdc;
- }
+  .preview-container {
+    width: 100%;
+    margin-top: 15px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
 }
+
+.image-preview {
+    display: block;
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 14px;
+    transition: transform 0.3s ease;
+}
+
+.image-preview:hover {
+    transform: scale(1.02);
+}
+
+.image-preview:hover{
+    transform: scale(1.01);
+}
+ }
+ .loading-box{
+
+margin:20px 0;
+
+padding:18px;
+
+background:#eef7ff;
+
+border-radius:12px;
+
+border:1px solid #b5d9ff;
+
+animation:pulse 1.2s infinite;
+
+}
+
+@keyframes pulse{
+
+0%{
+
+opacity:.6;
+
+}
+
+50%{
+
+opacity:1;
+
+}
+
+100%{
+
+opacity:.6;
+
+}
+
+ }
+
 
