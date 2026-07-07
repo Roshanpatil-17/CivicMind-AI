@@ -1,0 +1,679 @@
+[33mcommit 9f0e55811c334dca64acd9ec8866809a77dbff0e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: roshanpatil-17 <roshanpatil3548@gmail.com>
+Date:   Mon Jul 6 22:03:43 2026 +0530
+
+    Redesign Report Issue page with modern UI and interactive map
+
+[1mdiff --git a/frontend/src/pages/ReportIssue.jsx b/frontend/src/pages/ReportIssue.jsx[m
+[1mindex 3cc7528..f71edc4 100644[m
+[1m--- a/frontend/src/pages/ReportIssue.jsx[m
+[1m+++ b/frontend/src/pages/ReportIssue.jsx[m
+[36m@@ -1,187 +1,337 @@[m
+[31m-import { Camera, MapPin, Send } from 'lucide-react';[m
+[31m-import { useState } from 'react';[m
+[31m-import MapPicker from '../components/MapPicker';[m
+[32m+[m[32mimport { MapPin, Send } from "lucide-react";[m
+[32m+[m[32mimport { useState } from "react";[m
+ [m
+[31m-import { api } from '../api/client.js';[m
+[32m+[m[32mimport MapPicker from "../components/MapPicker";[m
+[32m+[m[32mimport { api } from "../api/client";[m
+ [m
+ export default function ReportIssue() {[m
+   const [form, setForm] = useState({[m
+[31m-    title: '',[m
+[31m-    description: '',[m
+[31m-    latitude: '',[m
+[31m-    longitude: '',[m
+[32m+[m[32m    title: "",[m
+[32m+[m[32m    description: "",[m
+[32m+[m[32m    latitude: "",[m
+[32m+[m[32m    longitude: "",[m
+     image: null,[m
+   });[m
+[32m+[m
+   const [preview, setPreview] = useState(null);[m
+   const [created, setCreated] = useState(null);[m
+[31m-  const [error, setError] = useState('');[m
+   const [loading, setLoading] = useState(false);[m
+[32m+[m[32m  const [error, setError] = useState("");[m
+ [m
+   function useLocation() {[m
+[31m-  navigator.geolocation.getCurrentPosition([m
+[31m-    (position) => {[m
+[31m-      setForm((current) => ({[m
+[31m-        ...current,[m
+[31m-        latitude: position.coords.latitude.toFixed(6),[m
+[31m-        longitude: position.coords.longitude.toFixed(6),[m
+[31m-      }));[m
+[31m-    },[m
+[31m-    () => {[m
+[31m-      alert("Unable to access your location.");[m
+[31m-    },[m
+[31m-    {[m
+[31m-      enableHighAccuracy: true,[m
+[31m-    }[m
+[31m-  );[m
+[31m- }[m
+[32m+[m[32m    navigator.geolocation.getCurrentPosition([m
+[32m+[m[32m      (position) => {[m
+[32m+[m[32m        setForm((current) => ({[m
+[32m+[m[32m          ...current,[m
+[32m+[m[32m          latitude: position.coords.latitude.toFixed(6),[m
+[32m+[m[32m          longitude: position.coords.longitude.toFixed(6),[m
+[32m+[m[32m        }));[m
+[32m+[m[32m      },[m
+[32m+[m[32m      () => {[m
+[32m+[m[32m        alert("Unable to get your location.");[m
+[32m+[m[32m      },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        enableHighAccuracy: true,[m
+[32m+[m[32m      }[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  function handleImage(event) {[m
+[32m+[m[32m    const file = event.target.files[0];[m
+[32m+[m
+[32m+[m[32m    if (!file) return;[m
+[32m+[m
+[32m+[m[32m    setForm((current) => ({[m
+[32m+[m[32m      ...current,[m
+[32m+[m[32m      image: file,[m
+[32m+[m[32m    }));[m
+[32m+[m
+[32m+[m[32m    setPreview(URL.createObjectURL(file));[m
+[32m+[m[32m  }[m
+ [m
+   async function submit(event) {[m
+     event.preventDefault();[m
+[31m-    setError('');[m
+[31m-    setCreated(null);[m
+[32m+[m
+     setLoading(true);[m
+[32m+[m[32m    setCreated(null);[m
+[32m+[m[32m    setError("");[m
+[32m+[m
+     const data = new FormData();[m
+[31m-    data.append('title', form.title);[m
+[31m-    data.append('description', form.description);[m
+[31m-    data.append('latitude', form.latitude);[m
+[31m-    data.append('longitude', form.longitude);[m
+[32m+[m
+[32m+[m[32m    data.append("title", form.title);[m
+[32m+[m[32m    data.append("description", form.description);[m
+[32m+[m[32m    data.append("latitude", form.latitude);[m
+[32m+[m[32m    data.append("longitude", form.longitude);[m
+[32m+[m
+     if (form.image) {[m
+[31m-      data.append('image', form.image);[m
+[32m+[m[32m      data.append("image", form.image);[m
+     }[m
+ [m
+     try {[m
+       const issue = await api.createIssue(data);[m
+[32m+[m
+       setCreated(issue);[m
+[31m-      setLoading(false);[m
+[31m-      setForm({ title: '', description: '', latitude: '', longitude: '', image: null });[m
+[32m+[m
+[32m+[m[32m      setForm({[m
+[32m+[m[32m        title: "",[m
+[32m+[m[32m        description: "",[m
+[32m+[m[32m        latitude: "",[m
+[32m+[m[32m        longitude: "",[m
+[32m+[m[32m        image: null,[m
+[32m+[m[32m      });[m
+[32m+[m
+[32m+[m[32m      setPreview(null);[m
+     } catch (err) {[m
+[32m+[m[32m      setError(err.message);[m
+[32m+[m[32m    } finally {[m
+       setLoading(false);[m
+[31m-    setError(err.message);[m
+     }[m
+   }[m
+[31m-[m
+   return ([m
+[31m-    <section className="page-grid two">[m
+[31m-      <div>[m
+[31m-        <div className="page-heading">[m
+[31m-          <h1>Report issue</h1>[m
+[31m-          <button className="secondary" type="button" onClick={useLocation}>[m
+[31m-            <MapPin size={18} />[m
+[31m-            <span>Use location</span>[m
+[32m+[m[32m    <section className="report-page">[m
+[32m+[m
+[32m+[m[32m  <div className="report-left">[m
+[32m+[m
+[32m+[m[32m    <h1>Report New Issue</h1>[m
+[32m+[m[32m    <p className="subtitle">[m
+[32m+[m[32m      Help improve your city by reporting civic problems.[m
+[32m+[m[32m    </p>[m
+[32m+[m
+[32m+[m[32m    <form className="report-form" onSubmit={submit}>[m
+[32m+[m
+[32m+[m[32m      <label>[m
+[32m+[m[32m        Title[m
+[32m+[m[32m        <input[m
+[32m+[m[32m          type="text"[m
+[32m+[m[32m          placeholder="Example: Large pothole near bus stand"[m
+[32m+[m[32m          value={form.title}[m
+[32m+[m[32m          onChange={(e) =>[m
+[32m+[m[32m            setForm({[m
+[32m+[m[32m              ...form,[m
+[32m+[m[32m              title: e.target.value,[m
+[32m+[m[32m            })[m
+[32m+[m[32m          }[m
+[32m+[m[32m          required[m
+[32m+[m[32m        />[m
+[32m+[m[32m      </label>[m
+[32m+[m
+[32m+[m[32m      <label>[m
+[32m+[m[32m        Description[m
+[32m+[m[32m        <textarea[m
+[32m+[m[32m          rows="5"[m
+[32m+[m[32m          placeholder="Describe the issue..."[m
+[32m+[m[32m          value={form.description}[m
+[32m+[m[32m          onChange={(e) =>[m
+[32m+[m[32m            setForm({[m
+[32m+[m[32m              ...form,[m
+[32m+[m[32m              description: e.target.value,[m
+[32m+[m[32m            })[m
+[32m+[m[32m          }[m
+[32m+[m[32m          required[m
+[32m+[m[32m        />[m
+[32m+[m[32m      </label>[m
+[32m+[m
+[32m+[m[32m      <div className="location-card">[m
+[32m+[m
+[32m+[m[32m        <div className="location-header">[m
+[32m+[m
+[32m+[m[32m          <h3>[m
+[32m+[m[32m            <MapPin size={18}/>[m
+[32m+[m[32m            Select Location[m
+[32m+[m[32m          </h3>[m
+[32m+[m
+[32m+[m[32m          <button[m
+[32m+[m[32m            type="button"[m
+[32m+[m[32m            className="secondary"[m
+[32m+[m[32m            onClick={useLocation}[m
+[32m+[m[32m          >[m
+[32m+[m[32m            Use My Location[m
+           </button>[m
+[32m+[m
+         </div>[m
+ [m
+[31m-        <form className="panel form-panel" onSubmit={submit}>[m
+[31m-          <label>[m
+[31m-            Title[m
+[31m-            <input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required />[m
+[31m-          </label>[m
+[31m-[m
+[31m-            Description[m
+[31m-            <textarea[m
+[31m-              rows={5}[m
+[31m-              value={form.description}[m
+[31m-              onChange={(event) => setForm({ ...form, description: event.target.value })}[m
+[31m-              required[m
+[31m-            />[m
+[31m-          <div className="panel">[m
+[31m-  <h3>Select Location</h3>[m
+[31m-[m
+[31m-  <MapPicker[m
+[31m-    latitude={form.latitude}[m
+[31m-    longitude={form.longitude}[m
+[31m-    onLocationChange={({ lat, lng }) => {[m
+[31m-      setForm((current) => ({[m
+[31m-        ...current,[m
+[31m-        latitude: lat.toFixed(6),[m
+[31m-        longitude: lng.toFixed(6),[m
+[31m-      }));[m
+[31m-    }}[m
+[31m-  />[m
+[31m-[m
+[31m-  <p style={{ marginTop: '10px' }}>[m
+[31m-    <strong>Latitude:</strong> {form.latitude || '--'}[m
+[31m-    <br />[m
+[31m-    <strong>Longitude:</strong> {form.longitude || '--'}[m
+[31m-  </p>[m
+[31m-</div>[m
+[31m-          <label>[m
+[31m-            Photo[m
+[31m-            <input[m
+[31m-  type="file"[m
+[31m-  accept="image/*"[m
+[31m-  onChange={(event) => {[m
+[31m-    const file = event.target.files[0];[m
+[32m+[m[32m        <MapPicker[m
+[32m+[m[32m          latitude={form.latitude}[m
+[32m+[m[32m          longitude={form.longitude}[m
+[32m+[m[32m          onLocationChange={({lat,lng})=>{[m
+ [m
+[31m-    if (!file) return;[m
+[32m+[m[32m            setForm(current=>({[m
+ [m
+[31m-    setForm({[m
+[31m-      ...form,[m
+[31m-      image: file,[m
+[31m-    });[m
+[32m+[m[32m              ...current,[m
+[32m+[m
+[32m+[m[32m              latitude:lat.toFixed(6),[m
+[32m+[m
+[32m+[m[32m              longitude:lng.toFixed(6)[m
+[32m+[m
+[32m+[m[32m            }))[m
+[32m+[m
+[32m+[m[32m          }}[m
+[32m+[m[32m        />[m
+[32m+[m
+[32m+[m[32m      </div>[m
+[32m+[m
+[32m+[m[32m      <label>[m
+[32m+[m
+[32m+[m[32m        Upload Image[m
+[32m+[m
+[32m+[m[32m        <input[m
+[32m+[m[32m          type="file"[m
+[32m+[m[32m          accept="image/*"[m
+[32m+[m[32m          onChange={handleImage}[m
+[32m+[m[32m        />[m
+[32m+[m
+[32m+[m[32m      </label>[m
+[32m+[m
+[32m+[m[32m      {error && ([m
+[32m+[m
+[32m+[m[32m        <div className="error-box">[m
+[32m+[m
+[32m+[m[32m          {error}[m
+[32m+[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m[32m      )}[m
+[32m+[m
+[32m+[m[32m      <button[m
+[32m+[m[32m        className="primary submit-btn"[m
+[32m+[m[32m        disabled={loading}[m
+[32m+[m[32m      >[m
+[32m+[m
+[32m+[m[32m        <Send size={18}/>[m
+[32m+[m
+[32m+[m[32m        {[m
+[32m+[m
+[32m+[m[32m        loading[m
+[32m+[m
+[32m+[m[32m        ?[m
+[32m+[m
+[32m+[m[32m        "Analyzing Issue..."[m
+[32m+[m
+[32m+[m[32m        :[m
+[32m+[m
+[32m+[m[32m        "Submit Report"[m
+[32m+[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m      </button>[m
+[32m+[m
+[32m+[m[32m    </form>[m
+ [m
+[31m-    setPreview(URL.createObjectURL(file));[m
+[31m-  }}[m
+[31m-/>[m
+[31m-          {preview && ([m
+[31m-  <div className="preview-container">[m
+[31m-    <img[m
+[31m-      src={preview}[m
+[31m-      alt="Preview"[m
+[31m-      className="image-preview"[m
+[31m-    />[m
+   </div>[m
+[31m-)}[m
+[31m-          </label>[m
+[31m-          {error && <p className="error">{error}</p>}[m
+[31m-          <button className="primary" type="submit" disabled={loading}>[m
+[31m-            <Send size={18} />[m
+[31m-            <span>{loading[m
+[31m-                  ? "Analyzing..."[m
+[31m-                    : "Submit"}[m
+[31m-            </span>[m
+[31m-            {[m
+[31m-loading && ([m
+ [m
+[31m-<div className="loading-box">[m
+[32m+[m[32m  <div className="report-right">[m
+ [m
+[31m-<p>📤 Uploading image...</p>[m
+[32m+[m[32m    <div className="preview-card">[m
+ [m
+[31m-<p>🤖 AI analyzing...</p>[m
+[32m+[m[32m      <h2>Image Preview</h2>[m
+ [m
+[31m-<p>🔍 Finding duplicates...</p>[m
+[32m+[m[32m      {[m
+ [m
+[31m-<p>⚡ Calculating priority...</p>[m
+[32m+[m[32m      preview[m
+ [m
+[31m-</div>[m
+[32m+[m[32m      ?[m
+[32m+[m
+[32m+[m[32m      <img[m
+[32m+[m[32m        src={preview}[m
+[32m+[m[32m        alt="Preview"[m
+[32m+[m[32m        className="image-preview"[m
+[32m+[m[32m      />[m
+[32m+[m
+[32m+[m[32m      :[m
+[32m+[m
+[32m+[m[32m      <div className="empty-preview">[m
+[32m+[m
+[32m+[m[32m        📷[m
+[32m+[m
+[32m+[m[32m        <p>No image selected</p>[m
+ [m
+[31m-)[m
+[31m-}[m
+[31m-          </button>[m
+[31m-        </form>[m
+       </div>[m
+ [m
+[31m-      <aside className="panel result-panel">[m
+[31m-        <Camera size={28} />[m
+[31m-        {created ? ([m
+[31m-          <>[m
+[31m-            <h2>Issue #{created.id}</h2>[m
+[31m-            <dl>[m
+[31m-              <dt>Category</dt>[m
+[31m-              <dd>{created.category}</dd>[m
+[31m-              <dt>Priority</dt>[m
+[31m-              <dd>{created.priority}</dd>[m
+[31m-              <dt>Confidence</dt>[m
+[31m-              <dd>{Math.round(created.confidence * 100)}%</dd>[m
+[31m-              <dt>Duplicate</dt>[m
+[31m-              <dd>{created.duplicate_of_id ? `#${created.duplicate_of_id}` : '-'}</dd>[m
+[31m-            </dl>[m
+[31m-          </>[m
+[31m-        ) : ([m
+[31m-          <h2>Ready</h2>[m
+[31m-        )}[m
+[31m-      </aside>[m
+[31m-    </section>[m
+[31m-  );[m
+[31m-}[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <div className="analysis-card">[m
+[32m+[m
+[32m+[m[32m      <h2>AI Analysis</h2>[m
+[32m+[m
+[32m+[m[32m      <div className="analysis-item">[m
+[32m+[m
+[32m+[m[32m        <span>Category</span>[m
+[32m+[m
+[32m+[m[32m        <strong>[m
+[32m+[m
+[32m+[m[32m          {created?.category ?? "--"}[m
+[32m+[m
+[32m+[m[32m        </strong>[m
+[32m+[m
+[32m+[m[32m      </div>[m
+[32m+[m
+[32m+[m[32m      <div className="analysis-item">[m
+[32m+[m
+[32m+[m[32m        <span>Confidence</span>[m
+[32m+[m
+[32m+[m[32m        <strong>[m
+[32m+[m
+[32m+[m[32m          {[m
+[32m+[m
+[32m+[m[32m          created[m
+[32m+[m
+[32m+[m[32m          ?[m
+[32m+[m
+[32m+[m[32m          `${Math.round(created.confidence*100)}%`[m
+[32m+[m
+[32m+[m[32m          :[m
+ [m
+[32m+[m[32m          "--"[m
+[32m+[m
+[32m+[m[32m          }[m
+[32m+[m
+[32m+[m[32m        </strong>[m
+[32m+[m
+[32m+[m[32m      </div>[m
+[32m+[m
+[32m+[m[32m      <div className="analysis-item">[m
+[32m+[m
+[32m+[m[32m        <span>Priority</span>[m
+[32m+[m
+[32m+[m[32m        <strong>[m
+[32m+[m
+[32m+[m[32m          {created?.priority ?? "--"}[m
+[32m+[m
+[32m+[m[32m        </strong>[m
+[32m+[m
+[32m+[m[32m      </div>[m
+[32m+[m
+[32m+[m[32m      <div className="analysis-item">[m
+[32m+[m
+[32m+[m[32m        <span>Duplicate</span>[m
+[32m+[m
+[32m+[m[32m        <strong>[m
+[32m+[m
+[32m+[m[32m          {[m
+[32m+[m
+[32m+[m[32m          created?.duplicate_of_id[m
+[32m+[m
+[32m+[m[32m          ?[m
+[32m+[m
+[32m+[m[32m          `#${created.duplicate_of_id}`[m
+[32m+[m
+[32m+[m[32m          :[m
+[32m+[m
+[32m+[m[32m          "No"[m
+[32m+[m
+[32m+[m[32m          }[m
+[32m+[m
+[32m+[m[32m        </strong>[m
+[32m+[m
+[32m+[m[32m      </div>[m
+[32m+[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m  </div>[m
+[32m+[m
+[32m+[m[32m</section>[m
+[32m+[m
+[32m+[m[32m);[m
+[32m+[m[32m}[m
+[1mdiff --git a/frontend/src/styles/app.css b/frontend/src/styles/app.css[m
+[1mindex 772c405..cb089b3 100644[m
+[1m--- a/frontend/src/styles/app.css[m
+[1m+++ b/frontend/src/styles/app.css[m
+[36m@@ -484,5 +484,229 @@[m [mopacity:.6;[m
+ }[m
+ [m
+  }[m
+[32m+[m[32m /* ===========================[m
+[32m+[m[32m   Report Issue v2[m
+[32m+[m[32m=========================== */[m
+[32m+[m
+[32m+[m[32m.report-page {[m
+[32m+[m[32m    display: grid;[m
+[32m+[m[32m    grid-template-columns: 2fr 1fr;[m
+[32m+[m[32m    gap: 30px;[m
+[32m+[m[32m    padding: 30px;[m
+[32m+[m[32m    align-items: start;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.report-left,[m
+[32m+[m[32m.report-right {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    flex-direction: column;[m
+[32m+[m[32m    gap: 20px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.report-left h1 {[m
+[32m+[m[32m    margin: 0;[m
+[32m+[m[32m    font-size: 32px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.subtitle {[m
+[32m+[m[32m    color: #777;[m
+[32m+[m[32m    margin-top: -10px;[m
+[32m+[m[32m    margin-bottom: 15px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.report-form {[m
+[32m+[m[32m    background: #ffffff;[m
+[32m+[m[32m    padding: 24px;[m
+[32m+[m[32m    border-radius: 18px;[m
+[32m+[m[32m    box-shadow: 0 10px 30px rgba(0,0,0,.08);[m
+[32m+[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    flex-direction: column;[m
+[32m+[m[32m    gap: 18px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.report-form label {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    flex-direction: column;[m
+[32m+[m[32m    gap: 8px;[m
+[32m+[m[32m    font-weight: 600;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.report-form input,[m
+[32m+[m[32m.report-form textarea {[m
+[32m+[m
+[32m+[m[32m    width: 100%;[m
+[32m+[m
+[32m+[m[32m    padding: 14px;[m
+[32m+[m
+[32m+[m[32m    border-radius: 12px;[m
+[32m+[m
+[32m+[m[32m    border: 1px solid #d7d7d7;[m
+[32m+[m
+[32m+[m[32m    font-size: 15px;[m
+[32m+[m
+[32m+[m[32m    outline: none;[m
+[32m+[m
+[32m+[m[32m    transition: .25s;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.report-form input:focus,[m
+[32m+[m[32m.report-form textarea:focus{[m
+[32m+[m
+[32m+[m[32m    border-color:#2563eb;[m
+[32m+[m
+[32m+[m[32m    box-shadow:0 0 0 3px rgba(37,99,235,.15);[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.location-card{[m
+[32m+[m
+[32m+[m[32m    border:1px solid #e2e8f0;[m
+[32m+[m
+[32m+[m[32m    border-radius:16px;[m
+[32m+[m
+[32m+[m[32m    padding:15px;[m
+[32m+[m
+[32m+[m[32m    background:#fafafa;[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.location-header{[m
+[32m+[m
+[32m+[m[32m    display:flex;[m
+[32m+[m
+[32m+[m[32m    justify-content:space-between;[m
+[32m+[m
+[32m+[m[32m    align-items:center;[m
+[32m+[m
+[32m+[m[32m    margin-bottom:15px;[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.location-header h3{[m
+[32m+[m
+[32m+[m[32m    display:flex;[m
+[32m+[m
+[32m+[m[32m    gap:8px;[m
+[32m+[m
+[32m+[m[32m    align-items:center;[m
+[32m+[m
+[32m+[m[32m    margin:0;[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.preview-card,[m
+[32m+[m[32m.analysis-card{[m
+[32m+[m
+[32m+[m[32m    background:#ffffff;[m
+[32m+[m
+[32m+[m[32m    border-radius:18px;[m
+[32m+[m
+[32m+[m[32m    padding:22px;[m
+[32m+[m
+[32m+[m[32m    box-shadow:0 10px 30px rgba(0,0,0,.08);[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.preview-card h2,[m
+[32m+[m[32m.analysis-card h2{[m
+[32m+[m
+[32m+[m[32m    margin-top:0;[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.image-preview{[m
+[32m+[m
+[32m+[m[32m    width:100%;[m
+[32m+[m
+[32m+[m[32m    height:320px;[m
+[32m+[m
+[32m+[m[32m    object-fit:cover;[m
+[32m+[m
+[32m+[m[32m    object-position:center;[m
+[32m+[m
+[32m+[m[32m    border-radius:16px;[m
+[32m+[m
+[32m+[m[32m    display:block;[m
+[32m+[m
+[32m+[m[32m    margin-top:15px;[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.empty-preview{[m
+[32m+[m
+[32m+[m[32m    height:320px;[m
+[32m+[m
+[32m+[m[32m    border:2px dashed #cbd5e1;[m
+[32m+[m
+[32m+[m[32m    border-radius:16px;[m
+[32m+[m
+[32m+[m[32m    display:flex;[m
+[32m+[m
+[32m+[m[32m    flex-direction:column;[m
+[32m+[m
+[32m+[m[32m    justify-content:center;[m
+[32m+[m
+[32m+[m[32m    align-items:center;[m
+[32m+[m
+[32m+[m[32m    font-size:22px;[m
+[32m+[m
+[32m+[m[32m    color:#94a3b8;[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.analysis-item{[m
+[32m+[m
+[32m+[m[32m    display:flex;[m
+[32m+[m
+[32m+[m[32m    justify-content:space-between;[m
+[32m+[m
+[32m+[m[32m    align-items:center;[m
+[32m+[m
+[32m+[m[32m    padding:15px 0

@@ -7,7 +7,7 @@ from app.db.session import get_db
 from app.models.issue import Issue
 from app.models.user import User
 from app.schemas.issue import IssueRead, IssueUpdate
-from app.services.ai_classifier import classify_issue
+from app.services.ai.detector import detect
 from app.services.duplicate_detector import find_duplicate_issue
 from app.services.priority_engine import calculate_priority
 from app.services.storage import save_upload
@@ -25,32 +25,51 @@ def create_issue(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Issue:
+
+    # Save uploaded image
     image_path = save_upload(image)
-    classification = classify_issue(description, image_path)
+
+    # AI Detection
+    result = detect(
+        title=title,
+        description=description,
+        image_path=image_path,
+    )
+
+    # Duplicate Detection
     duplicate = find_duplicate_issue(
         db,
         latitude=latitude,
         longitude=longitude,
         description=description,
-        category=classification.category,
+        category=result.category,
     )
-    priority = calculate_priority(classification.category, classification.confidence, duplicate)
 
+    # Priority Calculation
+    priority = calculate_priority(
+        result.category,
+        result.confidence,
+        duplicate,
+    )
+
+    # Create Database Record
     issue = Issue(
         title=title,
         description=description,
         latitude=latitude,
         longitude=longitude,
         image_path=image_path,
-        category=classification.category,
-        confidence=classification.confidence,
+        category=result.category,
+        confidence=result.confidence,
         priority=priority,
         reporter_id=current_user.id,
         duplicate_of_id=duplicate.id if duplicate else None,
     )
+
     db.add(issue)
     db.commit()
     db.refresh(issue)
+
     return issue
 
 
@@ -114,3 +133,4 @@ def delete_issue(
     db.delete(issue)
     db.commit()
 
+    
