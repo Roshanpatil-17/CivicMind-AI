@@ -1,11 +1,12 @@
 from functools import lru_cache
+from pathlib import Path
 
 from ultralytics import YOLO
 
-MODEL_PATH = "yolo11n.pt"
+MODEL_PATH = Path("models/pothole.pt")
 
 
 @lru_cache
 def load_model() -> YOLO:
-    print("Loading YOLO model...")
-    return YOLO(MODEL_PATH)
+    print("🚀 Loading Pothole AI Model...")
+    return YOLO(str(MODEL_PATH))
