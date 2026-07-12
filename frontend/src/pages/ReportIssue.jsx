@@ -87,251 +87,220 @@ export default function ReportIssue() {
       setLoading(false);
     }
   }
+
   return (
     <section className="report-page">
 
-  <div className="report-left">
+      <div className="report-left">
 
-    <h1>Report New Issue</h1>
-    <p className="subtitle">
-      Help improve your city by reporting civic problems.
-    </p>
+        <h1>Report New Issue</h1>
 
-    <form className="report-form" onSubmit={submit}>
+        <p className="subtitle">
+          Help improve your city by reporting civic problems.
+        </p>
 
-      <label>
-        Title
-        <input
-          type="text"
-          placeholder="Example: Large pothole near bus stand"
-          value={form.title}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              title: e.target.value,
-            })
-          }
-          required
-        />
-      </label>
+        <form className="report-form" onSubmit={submit}>
 
-      <label>
-        Description
-        <textarea
-          rows="5"
-          placeholder="Describe the issue..."
-          value={form.description}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              description: e.target.value,
-            })
-          }
-          required
-        />
-      </label>
+          <label>
+            Title
+            <input
+              type="text"
+              placeholder="Example: Large pothole near bus stand"
+              value={form.title}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  title: e.target.value,
+                })
+              }
+              required
+            />
+          </label>
 
-      <div className="location-card">
+          <label>
+            Description
+            <textarea
+              rows={5}
+              placeholder="Describe the issue..."
+              value={form.description}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  description: e.target.value,
+                })
+              }
+              required
+            />
+          </label>
 
-        <div className="location-header">
+          <div className="location-card">
 
-          <h3>
-            <MapPin size={18}/>
-            Select Location
-          </h3>
+            <div className="location-header">
+
+              <h3>
+                <MapPin size={18} />
+                Select Location
+              </h3>
+
+              <button
+                type="button"
+                className="secondary"
+                onClick={useLocation}
+              >
+                Use My Location
+              </button>
+
+            </div>
+
+            <MapPicker
+              latitude={form.latitude}
+              longitude={form.longitude}
+              onLocationChange={({ lat, lng }) =>
+                setForm((current) => ({
+                  ...current,
+                  latitude: lat.toFixed(6),
+                  longitude: lng.toFixed(6),
+                }))
+              }
+            />
+
+          </div>
+
+          <label>
+
+            Upload Image
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImage}
+            />
+
+          </label>
+
+          {error && (
+            <div className="error-box">
+              {error}
+            </div>
+          )}
 
           <button
-            type="button"
-            className="secondary"
-            onClick={useLocation}
+            className="primary submit-btn"
+            disabled={loading}
           >
-            Use My Location
+
+            <Send size={18} />
+
+            {loading ? "Analyzing Issue..." : "Submit Report"}
+
           </button>
 
-        </div>
-
-        <MapPicker
-          latitude={form.latitude}
-          longitude={form.longitude}
-          onLocationChange={({lat,lng})=>{
-
-            setForm(current=>({
-
-              ...current,
-
-              latitude:lat.toFixed(6),
-
-              longitude:lng.toFixed(6)
-
-            }))
-
-          }}
-        />
+        </form>
 
       </div>
 
-      <label>
+      <div className="report-right">
 
-        Upload Image
+        <div className="preview-card">
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImage}
-        />
+          <h2>Image Preview</h2>
 
-      </label>
-
-      {error && (
-
-        <div className="error-box">
-
-          {error}
+          {preview ? (
+            <img
+              src={preview}
+              alt="Preview"
+              className="image-preview"
+            />
+          ) : (
+            <div className="empty-preview">
+              📷
+              <p>No image selected</p>
+            </div>
+          )}
 
         </div>
 
-      )}
+        <div className="analysis-card">
 
-      <button
-        className="primary submit-btn"
-        disabled={loading}
-      >
+          <h2>🤖 AI Analysis</h2>
 
-        <Send size={18}/>
+          <div className="ai-status">
+  {created ? (
+    created.confidence >= 0.9 ? (
+      <span className="status verified">🟢 AI Verified</span>
+    ) : created.confidence >= 0.7 ? (
+      <span className="status review">🟡 Manual Review</span>
+    ) : (
+      <span className="status low">🔴 Low Confidence</span>
+    )
+  ) : (
+    <span className="status waiting">⚪ Waiting for Analysis</span>
+  )}
+</div>
+          <div className="analysis-item">
+            <span>📌 Category</span>
+            <strong>{created?.category ?? "--"}</strong>
+          </div>
 
-        {
+          <div className="analysis-item">
+            <span>📊 Confidence</span>
 
-        loading
+            <div className="confidence-box">
 
-        ?
+              <div className="confidence-bar">
+                <div
+                  className="confidence-fill"
+                  style={{
+                    width: created
+                      ? `${Math.round(created.confidence * 100)}%`
+                      : "0%",
+                  }}
+                />
+              </div>
 
-        "Analyzing Issue..."
+              <strong>
+                {created
+                  ? `${Math.round(created.confidence * 100)}%`
+                  : "--"}
+              </strong>
 
-        :
+            </div>
 
-        "Submit Report"
+          </div>
 
-        }
+          <div className="analysis-item">
+            <span>🚨 Priority</span>
+            <strong>{created?.priority ?? "--"}</strong>
+          </div>
 
-      </button>
+          <div className="analysis-item">
+            <span>🏢 Department</span>
+            <strong>Road Maintenance</strong>
+          </div>
 
-    </form>
+          <div className="analysis-item">
+            <span>🤖 AI Model</span>
+            <strong>YOLO Pothole v1</strong>
+          </div>
 
-  </div>
+          <div className="analysis-item">
+            <span>🆔 Issue ID</span>
+            <strong>{created ? `#${created.id}` : "--"}</strong>
+          </div>
 
-  <div className="report-right">
+          <div className="analysis-item">
+            <span>🔁 Duplicate</span>
+            <strong>
+              {created?.duplicate_of_id
+                ? `#${created.duplicate_of_id}`
+                : "No"}
+            </strong>
+          </div>
 
-    <div className="preview-card">
-
-      <h2>Image Preview</h2>
-
-      {
-
-      preview
-
-      ?
-
-      <img
-        src={preview}
-        alt="Preview"
-        className="image-preview"
-      />
-
-      :
-
-      <div className="empty-preview">
-
-        📷
-
-        <p>No image selected</p>
-
-      </div>
-
-      }
-
-    </div>
-
-    <div className="analysis-card">
-
-      <h2>AI Analysis</h2>
-
-      <div className="analysis-item">
-
-        <span>Category</span>
-
-        <strong>
-
-          {created?.category ?? "--"}
-
-        </strong>
-
-      </div>
-
-      <div className="analysis-item">
-
-        <span>Confidence</span>
-
-        <strong>
-
-          {
-
-          created
-
-          ?
-
-          `${Math.round(created.confidence*100)}%`
-
-          :
-
-          "--"
-
-          }
-
-        </strong>
+        </div>
 
       </div>
 
-      <div className="analysis-item">
-
-        <span>Priority</span>
-
-        <strong>
-
-          {created?.priority ?? "--"}
-
-        </strong>
-
-      </div>
-
-      <div className="analysis-item">
-
-        <span>Duplicate</span>
-
-        <strong>
-
-          {
-
-          created?.duplicate_of_id
-
-          ?
-
-          `#${created.duplicate_of_id}`
-
-          :
-
-          "No"
-
-          }
-
-        </strong>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-);
+    </section>
+  );
 }
